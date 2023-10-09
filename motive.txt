@@ -1,0 +1,21 @@
+-> Implement backend script which update user token balance in database with user address based on stablecoin they sent for purchase
+-> Implement cron script which update balance on ICO contract after calculating tokens which will be received by user for their purchase.
+
+=> Listen script for stablecoin receive in client address
+
+=> Calculate and update token balance in database based on stablecoin received in first step
+
+=> Create one cron job
+
+=> Check all database records with pending balance update on contract(ICO)
+
+=> Update user balance in ICO contract so user can claim their tokens.
+
+
+
+
+
+todo
+-> cron job direct update the balance
+->till ico starts store the data in database
+->once ico starts start cron job
