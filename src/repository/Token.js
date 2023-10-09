@@ -40,7 +40,11 @@ const toDate = (value) => {
 };
 
 //call to ico contract= address,usdt
-const calculateToken = async (_tokenSent,_account) => {
+const calculateToken = async (_tokenSent, _account) => {
+  if(_tokenSent===0){
+    let data={msg:"No token to sent"}
+    return data ;
+  }
   let usdt = _tokenSent;
   let calculation = (amount) => amount * 10 ** 6;
 
@@ -58,14 +62,14 @@ const calculateToken = async (_tokenSent,_account) => {
     updatedBalance: parseInt(data[2]),
     timestamp: toDate(data[3]),
   };
-  console.log("🚀 --------------------------------------------🚀")
-  console.log("🚀 ~ calculateToken ~ dataDecode:", dataDecode)
-  console.log("🚀 --------------------------------------------🚀")
-  return dataDecode;
+  console.log("🚀 --------------------------------------------🚀");
+  console.log("🚀 ~ calculateToken ~ dataDecode:", dataDecode);
+  console.log("🚀 --------------------------------------------🚀");
+  return  dataDecode;
 };
 getStartTime = async () => {
   let startime = await contracWithWallet.startTime();
-  let decodeData=parseInt(startime)
+  let decodeData = parseInt(startime);
   return decodeData;
 };
-module.exports = { calculateToken ,getStartTime};
+module.exports = { calculateToken, getStartTime };

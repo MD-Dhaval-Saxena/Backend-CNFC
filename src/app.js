@@ -5,6 +5,8 @@ const mainRoute = require("./routes");
 const cors = require("cors");
 const cron = require("node-cron");
 const db = require("./db");
+let UserSchema = require("./Model/User_balance");
+
 db();
 
 const app = express();
@@ -33,7 +35,7 @@ let start_url = "http://localhost:3000/getStartTime";
 async function getStartTimeData() {
   const response = await fetch(start_url);
   const jsonResponse = await response.json();
-  console.log(jsonResponse);
+  return jsonResponse.startTime;
 }
 
 let dataToken = {
@@ -57,38 +59,73 @@ async function getUpdateBal(_dataToken) {
 let getTrxsURL = "http://localhost:3000/getTrxs";
 
 let trx;
+
 async function getUserBal() {
   const response = await fetch(getTrxsURL);
   const jsonResponse = await response.json();
   trx = jsonResponse;
-  for (let i = 0; i < trx.length; i++) {
-    let oneTrx = trx[i];
-    let data = {
+
+  async function processTrx(index) {
+    if (index >= trx.length) {
+      // All transactions processed
+      return;
+    }
+
+    const oneTrx = trx[index];
+    const data = {
       tokenAmount: oneTrx.tokenAmount,
       account: oneTrx.account,
     };
-    getUpdateBal(data);
+    console.log(data);
+
+
+    let user = await UserSchema.find({ account: data.account });
+
+    let update = await UserSchema.findOneAndUpdate(
+      { account: user[0].account },
+      { tokenAmount: user[0].tokenAmount - data.tokenAmount },
+      { new: true }
+    );
+    console.log(update);
+
+        // Call getUpdateBal after a 5-second delay
+        getUpdateBal(data);
+
+    // Process the next transaction after the delay
+    setTimeout(() => {
+      processTrx(index + 1);
+    }, 5000); // 5000 milliseconds (5 seconds)
   }
+
+  // Start processing transactions
+  processTrx(0);
 }
-// getUserBal()
+
+getUserBal()
 
 //cron
-const CronJob = require("cron").CronJob;
 
-const epochTime = getStartTimeData(); //when ico starts
-const targetDate = new Date(epochTime * 1000);
+const cron_Job = async () => {
+  const CronJob = require("cron").CronJob;
 
-const job = new CronJob(
-  targetDate,
-  () => {
-    setInterval(() => {
-      console.log("//12:06:39 PM");
-    }, 200);
-  },
-  null,
-  true,
-  "UTC"
-);
+  const epochTime = await getStartTimeData(); //when ico starts
+  console.log("🚀 -------------------------🚀");
+  console.log("🚀 ~ epochTime:", epochTime);
+  console.log("🚀 -------------------------🚀");
+  const targetDate = new Date(epochTime * 1000);
+
+  const job = new CronJob(
+    targetDate,
+    () => {
+      console.log("ico Started");
+      getUserBal();
+    },
+    null,
+    true,
+    "UTC"
+  );
+};
+// cron_Job();
 
 app.listen(port, () => {
   console.log(`Server is Running On http://localhost:${port}`);

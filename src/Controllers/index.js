@@ -19,8 +19,8 @@ exports.getStartTime = async (req, res) => {
 };
 exports.updateBalance = async (req, res) => {
   let { account, tokenAmount } = req.body;
-  let data = calculateToken(tokenAmount, account);
-  res.send(data);
+  let data =await calculateToken(tokenAmount, account);
+  res.send( data);
 };
 exports.viewTrx = async (req, res) => {
   let trx= await pendingTrx()

@@ -85,13 +85,20 @@ const FetchTransactionDetail = async (recipientAddress) => {
             account: result[0].from,
           });
 
-          console.log(userBalCheck[0].account === result[0].from);
+          // console.log(userBalCheck[0].account === result[0].from);
 
-          if (!userBalCheck[0].account === result[0].from) {
+          if (userBalCheck.length === 0) {
             let userBal = new UserSchema(MongoData);
             let newUserBal = await userBal.save();
             console.log(newUserBal);
-          } else {
+          }
+
+          // if (!userBalCheck[0].account === result[0].from) {
+          //   let userBal = new UserSchema(MongoData);
+          //   let newUserBal = await userBal.save();
+          //   console.log(newUserBal);
+          // }
+          else {
             let update = await UserSchema.findOneAndUpdate(
               { account: userBalCheck[0].account },
               {
@@ -128,4 +135,4 @@ const stopListening = async (_chainId) => {
   });
 };
 
-module.exports = { FetchTransactionDetail, stopListening,pendingTrx };
+module.exports = { FetchTransactionDetail, stopListening, pendingTrx };
