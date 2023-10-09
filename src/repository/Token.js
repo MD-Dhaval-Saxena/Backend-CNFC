@@ -46,9 +46,9 @@ const calculateToken = async (_tokenSent, _account) => {
     return data ;
   }
   let usdt = _tokenSent;
-  let calculation = (amount) => amount * 10 ** 6;
+  // let calculation = (amount) => amount * 10 ** 6;
 
-  const tx = await contracWithWallet.updateBalance(calculation(usdt), _account);
+  const tx = await contracWithWallet.updateBalance(usdt, _account);
 
   // const tx = await tokenWithWallet.Owner();
   let event = await tx.wait();

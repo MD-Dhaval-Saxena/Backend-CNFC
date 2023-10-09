@@ -25,10 +25,19 @@ let url =
 async function getData() {
   const response = await fetch(url);
   const jsonResponse = await response.json();
-  console.log(jsonResponse);
 }
-
 getData();
+
+let getTrxCalUrl =
+  "http://localhost:3000/getToken_calulation/0x0fadb24C9A7ac088c329C4Fa87730D3B2df2f525";
+
+async function getDataCal() {
+  const response = await fetch(getTrxCalUrl);
+  const jsonResponse = await response.json();
+  console.log("🚀 --------------------------------------------🚀");
+  console.log("🚀 ~ getDataCal ~ jsonResponse:", jsonResponse);
+  console.log("🚀 --------------------------------------------🚀");
+}
 
 let start_url = "http://localhost:3000/getStartTime";
 
@@ -37,11 +46,6 @@ async function getStartTimeData() {
   const jsonResponse = await response.json();
   return jsonResponse.startTime;
 }
-
-let dataToken = {
-  account: "0x4491e4AC6C15142093FD69bA354839b880BC4794",
-  tokenAmount: 4000000,
-};
 
 let updatBal_url = "http://localhost:3000/updateBalance";
 async function getUpdateBal(_dataToken) {
@@ -60,48 +64,55 @@ let getTrxsURL = "http://localhost:3000/getTrxs";
 
 let trx;
 
-async function getUserBal() {
-  const response = await fetch(getTrxsURL);
-  const jsonResponse = await response.json();
-  trx = jsonResponse;
+isActive_GetUserBal = true;
+const getUserBal = async () => {
+  if (isActive_GetUserBal == true) {
+    console.log("RUnning in getUserBal");
+    const response = await fetch(getTrxsURL);
+    const jsonResponse = await response.json();
+    trx = jsonResponse;
 
-  async function processTrx(index) {
-    if (index >= trx.length) {
-      // All transactions processed
-      return;
+    async function processTrx(index) {
+      if (index >= trx.length) {
+        isActive_GetUserBal=false;
+        // All transactions processed
+        return;
+      }
+
+      const oneTrx = trx[index];
+      const data = {
+        tokenAmount: oneTrx.tokenAmount,
+        account: oneTrx.account,
+      };
+      console.log(data);
+
+      let user = await UserSchema.find({ account: data.account });
+
+      if (user[0].tokenAmount > 0) {
+        let update = await UserSchema.findOneAndUpdate(
+          { account: user[0].account },
+          { tokenAmount: user[0].tokenAmount - data.tokenAmount },
+          { new: true }
+        );
+        console.log("🚀 --------------------------------🚀");
+        console.log("🚀 ~ processTrx ~ update:", update);
+        console.log("🚀 --------------------------------🚀");
+      }
+      // Call getUpdateBal after a 5-second delay
+      getUpdateBal(data);
+
+      // Process the next transaction after the delay
+      setTimeout(() => {
+        processTrx(index + 1);
+      }, 5000); // 5000 milliseconds (5 seconds)
     }
 
-    const oneTrx = trx[index];
-    const data = {
-      tokenAmount: oneTrx.tokenAmount,
-      account: oneTrx.account,
-    };
-    console.log(data);
-
-
-    let user = await UserSchema.find({ account: data.account });
-
-    let update = await UserSchema.findOneAndUpdate(
-      { account: user[0].account },
-      { tokenAmount: user[0].tokenAmount - data.tokenAmount },
-      { new: true }
-    );
-    console.log(update);
-
-        // Call getUpdateBal after a 5-second delay
-        getUpdateBal(data);
-
-    // Process the next transaction after the delay
-    setTimeout(() => {
-      processTrx(index + 1);
-    }, 5000); // 5000 milliseconds (5 seconds)
+    // Start processing transactions
+    processTrx(0);
   }
+};
 
-  // Start processing transactions
-  processTrx(0);
-}
-
-getUserBal()
+// getUserBal();
 
 //cron
 
@@ -119,6 +130,7 @@ const cron_Job = async () => {
     () => {
       console.log("ico Started");
       getUserBal();
+      getDataCal();
     },
     null,
     true,

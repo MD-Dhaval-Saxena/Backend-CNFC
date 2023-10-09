@@ -78,27 +78,23 @@ const FetchTransactionDetail = async (recipientAddress) => {
           account: result[0].from,
           tokenAmount: result[0].tokenAmount,
         };
-        console.log(MongoData);
+        console.log(
+          "🚀 ------------------------------------------------------🚀"
+        );
+        console.log("🚀 ~ Calling from FetchTransactionDetail:", MongoData);
+        console.log(
+          "🚀 ------------------------------------------------------🚀"
+        );
 
         try {
           let userBalCheck = await UserSchema.find({
             account: result[0].from,
           });
 
-          // console.log(userBalCheck[0].account === result[0].from);
-
           if (userBalCheck.length === 0) {
             let userBal = new UserSchema(MongoData);
             let newUserBal = await userBal.save();
-            console.log(newUserBal);
-          }
-
-          // if (!userBalCheck[0].account === result[0].from) {
-          //   let userBal = new UserSchema(MongoData);
-          //   let newUserBal = await userBal.save();
-          //   console.log(newUserBal);
-          // }
-          else {
+          } else {
             let update = await UserSchema.findOneAndUpdate(
               { account: userBalCheck[0].account },
               {
@@ -107,13 +103,33 @@ const FetchTransactionDetail = async (recipientAddress) => {
               },
               { new: true }
             );
-            console.log(update);
           }
         } catch (error) {
           console.log(error);
         }
+
         // sendEmails(`The Latest Transaction to Your wallet:
         // Token name: ${result[0].tokenName}   ,Token Received: ${result[0].tokenAmount}`);
+      } else {
+        return;
+      }
+    });
+  });
+};
+const FetchTransactionDetailWithCalculation = async (recipientAddress) => {
+  providers.forEach((provider, index) => {
+    filters[index] = provider.on("block", async (blockNumber) => {
+      const result = await _fetchTransactionDetail(
+        recipientAddress,
+        blockNumber,
+        provider
+      );
+      if (result.length > 0) {
+        let tokenAmount =result[0].tokenAmount;
+        let calculte = await calculateToken(tokenAmount,result[0].from);
+        console.log("🚀 ----------------------------------------------------🚀")
+        console.log("🚀 ~ calculateToken:", calculte)
+        console.log("🚀 ----------------------------------------------------🚀")
       } else {
         return;
       }
@@ -135,4 +151,9 @@ const stopListening = async (_chainId) => {
   });
 };
 
-module.exports = { FetchTransactionDetail, stopListening, pendingTrx };
+module.exports = {
+  FetchTransactionDetail,
+  FetchTransactionDetailWithCalculation,
+  stopListening,
+  pendingTrx,
+};
