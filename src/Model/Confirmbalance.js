@@ -1,6 +1,6 @@
 const { Schema, model } = require("mongoose");
 
-const UserSchema = new Schema({
+const ConfirmSchema = new Schema({
   account: {
     type: String,
     required: true,
@@ -13,10 +13,10 @@ const UserSchema = new Schema({
     type: Number,
     default: () => Date.now(),
   },
-  isTokenClaimed: {
+  isBalanceUpdated: {
     type: Boolean,
-    default: false,
+    default: true,
   },
 });
 
-module.exports = model("user", UserSchema);
+module.exports = model("confirm-trx", ConfirmSchema);

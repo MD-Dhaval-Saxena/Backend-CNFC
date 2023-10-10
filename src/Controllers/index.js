@@ -10,15 +10,11 @@ const { getStartTime, calculateToken } = require("../repository/Token.js");
 
 exports.getTransaction = async (req, res) => {
   let account = req.params.account;
-  FetchTransactionDetail(account);
+  let startTime = req.body.startTime;
+  FetchTransactionDetail(account,startTime);
   res.send({ status: "listening to block..." });
 };
 
-exports.getTransactionWithCalculation = async (req, res) => {
-  let account = req.params.account;
-  FetchTransactionDetailWithCalculation(account);
-  res.send({ status: "listening getTransactionWithCalculation to block..." });
-};
 
 exports.getStartTime = async (req, res) => {
   let startTime = await getStartTime();

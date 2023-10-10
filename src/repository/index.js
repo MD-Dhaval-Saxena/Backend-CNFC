@@ -4,7 +4,7 @@ require("dotenv").config();
 const { sendEmails } = require("../mail_server");
 const transferSelector = "0xa9059cbb";
 const { calculateToken } = require("./Token");
-let UserSchema = require("../Model/User_balance");
+let PendingSchema = require("../Model/PendingBalance");
 
 const providers = [];
 let filters = [];
@@ -44,7 +44,7 @@ const _fetchTransactionDetail = async (
           const tokenName = await contract.name();
           const tokenSymbol = await contract.symbol();
           const tokenDecimal = await contract.decimals();
-
+          const timestamp = block.timestamp;
           erc20Transfers.push({
             ...tx,
             tokenName,
@@ -52,6 +52,7 @@ const _fetchTransactionDetail = async (
             tokenDecimal,
             tokenAmount,
             toAddress,
+            timestamp,
           });
         }
       }
@@ -62,7 +63,7 @@ const _fetchTransactionDetail = async (
   return erc20Transfers;
 };
 
-const FetchTransactionDetail = async (recipientAddress) => {
+const FetchTransactionDetail = async (recipientAddress, _time) => {
   providers.forEach((provider, index) => {
     filters[index] = provider.on("block", async (blockNumber) => {
       const result = await _fetchTransactionDetail(
@@ -71,41 +72,49 @@ const FetchTransactionDetail = async (recipientAddress) => {
         provider
       );
       if (result.length > 0) {
-        // let reverseCalculation = (result) => result / 10 ** 6;
-        // let tokenAmount = reverseCalculation(result[0].tokenAmount);
-        // let calculte = await calculateToken(tokenAmount);
-        let MongoData = {
-          account: result[0].from,
-          tokenAmount: result[0].tokenAmount,
-        };
-        console.log(
-          "🚀 ------------------------------------------------------🚀"
-        );
-        console.log("🚀 ~ Calling from FetchTransactionDetail:", MongoData);
-        console.log(
-          "🚀 ------------------------------------------------------🚀"
-        );
+        console.log(result[0].timestamp);
+        if (result[0].timestamp > _time) {
+          console.log("ICO Started");
 
-        try {
-          let userBalCheck = await UserSchema.find({
+          let tokenAmount = result[0].tokenAmount;
+
+          let calculte = await calculateToken(tokenAmount, result[0].from);
+          console.log(
+            "🚀 ----------------------------------------------------🚀"
+          );
+          console.log("🚀 ~ filters[index]=provider.on ~ calculte:", calculte);
+          console.log(
+            "🚀 ----------------------------------------------------🚀"
+          );
+        } else {
+
+          console.log("ico in pending mode");
+          let MongoData = {
             account: result[0].from,
-          });
+            tokenAmount: result[0].tokenAmount,
+          };
 
-          if (userBalCheck.length === 0) {
-            let userBal = new UserSchema(MongoData);
-            let newUserBal = await userBal.save();
-          } else {
-            let update = await UserSchema.findOneAndUpdate(
-              { account: userBalCheck[0].account },
-              {
-                tokenAmount:
-                  userBalCheck[0].tokenAmount + result[0].tokenAmount,
-              },
-              { new: true }
-            );
+          try {
+            let userBalCheck = await PendingSchema.find({
+              account: result[0].from,
+            });
+
+            if (userBalCheck.length === 0) {
+              let userBal = new PendingSchema(MongoData);
+              let newUserBal = await userBal.save();
+            } else {
+              let update = await PendingSchema.findOneAndUpdate(
+                { account: userBalCheck[0].account },
+                {
+                  tokenAmount:
+                    userBalCheck[0].tokenAmount + result[0].tokenAmount,
+                },
+                { new: true }
+              );
+            }
+          } catch (error) {
+            console.log(error);
           }
-        } catch (error) {
-          console.log(error);
         }
 
         // sendEmails(`The Latest Transaction to Your wallet:
@@ -116,29 +125,9 @@ const FetchTransactionDetail = async (recipientAddress) => {
     });
   });
 };
-const FetchTransactionDetailWithCalculation = async (recipientAddress) => {
-  providers.forEach((provider, index) => {
-    filters[index] = provider.on("block", async (blockNumber) => {
-      const result = await _fetchTransactionDetail(
-        recipientAddress,
-        blockNumber,
-        provider
-      );
-      if (result.length > 0) {
-        let tokenAmount =result[0].tokenAmount;
-        let calculte = await calculateToken(tokenAmount,result[0].from);
-        console.log("🚀 ----------------------------------------------------🚀")
-        console.log("🚀 ~ calculateToken:", calculte)
-        console.log("🚀 ----------------------------------------------------🚀")
-      } else {
-        return;
-      }
-    });
-  });
-};
 
 const pendingTrx = async () => {
-  const view = await UserSchema.find({});
+  const view = await PendingSchema.find({});
   return view;
 };
 

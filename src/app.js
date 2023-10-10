@@ -1,12 +1,18 @@
 require("dotenv").config();
-// # Replace this with your Unix timestamp
 const express = require("express");
 const mainRoute = require("./routes");
 const cors = require("cors");
 const cron = require("node-cron");
 const db = require("./db");
-let UserSchema = require("./Model/User_balance");
-
+const pendingTrx = require("./Model/PendingBalance");
+const confirmTrx = require("./Model/Confirmbalance");
+const { send_usdt } = require("./repository/Token");
+const {
+  getStartTimeData,
+  getData,
+  getUpdateBal,
+  getUserBal,
+} = require("./Database/index");
 db();
 
 const app = express();
@@ -19,106 +25,13 @@ app.use(express.urlencoded({ extended: true }));
 // Routes imported
 app.use(mainRoute);
 
-let url =
-  "http://localhost:3000/getToken/0x0fadb24C9A7ac088c329C4Fa87730D3B2df2f525";
+// send_usdt("0x0fadb24C9A7ac088c329C4Fa87730D3B2df2f525",1)
 
-async function getData() {
-  const response = await fetch(url);
-  const jsonResponse = await response.json();
-}
 getData();
-
-let getTrxCalUrl =
-  "http://localhost:3000/getToken_calulation/0x0fadb24C9A7ac088c329C4Fa87730D3B2df2f525";
-
-async function getDataCal() {
-  const response = await fetch(getTrxCalUrl);
-  const jsonResponse = await response.json();
-  console.log("🚀 --------------------------------------------🚀");
-  console.log("🚀 ~ getDataCal ~ jsonResponse:", jsonResponse);
-  console.log("🚀 --------------------------------------------🚀");
-}
-
-let start_url = "http://localhost:3000/getStartTime";
-
-async function getStartTimeData() {
-  const response = await fetch(start_url);
-  const jsonResponse = await response.json();
-  return jsonResponse.startTime;
-}
-
-let updatBal_url = "http://localhost:3000/updateBalance";
-async function getUpdateBal(_dataToken) {
-  const response = await fetch(`${updatBal_url}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(_dataToken),
-  });
-  const jsonResponse = await response.json();
-  console.log(jsonResponse);
-}
-
-let getTrxsURL = "http://localhost:3000/getTrxs";
-
-let trx;
-
-isActive_GetUserBal = true;
-const getUserBal = async () => {
-  if (isActive_GetUserBal == true) {
-    console.log("RUnning in getUserBal");
-    const response = await fetch(getTrxsURL);
-    const jsonResponse = await response.json();
-    trx = jsonResponse;
-
-    async function processTrx(index) {
-      if (index >= trx.length) {
-        isActive_GetUserBal=false;
-        // All transactions processed
-        return;
-      }
-
-      const oneTrx = trx[index];
-      const data = {
-        tokenAmount: oneTrx.tokenAmount,
-        account: oneTrx.account,
-      };
-      console.log(data);
-
-      let user = await UserSchema.find({ account: data.account });
-
-      if (user[0].tokenAmount > 0) {
-        let update = await UserSchema.findOneAndUpdate(
-          { account: user[0].account },
-          { tokenAmount: user[0].tokenAmount - data.tokenAmount },
-          { new: true }
-        );
-        console.log("🚀 --------------------------------🚀");
-        console.log("🚀 ~ processTrx ~ update:", update);
-        console.log("🚀 --------------------------------🚀");
-      }
-      // Call getUpdateBal after a 5-second delay
-      getUpdateBal(data);
-
-      // Process the next transaction after the delay
-      setTimeout(() => {
-        processTrx(index + 1);
-      }, 5000); // 5000 milliseconds (5 seconds)
-    }
-
-    // Start processing transactions
-    processTrx(0);
-  }
-};
-
 // getUserBal();
-
-//cron
 
 const cron_Job = async () => {
   const CronJob = require("cron").CronJob;
-
   const epochTime = await getStartTimeData(); //when ico starts
   console.log("🚀 -------------------------🚀");
   console.log("🚀 ~ epochTime:", epochTime);
@@ -129,17 +42,16 @@ const cron_Job = async () => {
     targetDate,
     () => {
       console.log("ico Started");
+      getData();
       getUserBal();
-      getDataCal();
     },
     null,
     true,
     "UTC"
   );
 };
-// cron_Job();
+cron_Job();
 
 app.listen(port, () => {
   console.log(`Server is Running On http://localhost:${port}`);
 });
-//

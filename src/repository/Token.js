@@ -6,6 +6,7 @@ const ico_abi = require("../ABI/Contract.json");
 const tokenAbi = require("../ABI/Token.json");
 const contract_address = process.env.Contract_address;
 const Token_address = process.env.Token_address;
+const usdt_address = process.env.usdt_address;
 const account = process.env.account;
 
 const privateKey = process.env.privateKey;
@@ -20,8 +21,10 @@ const cors = require("cors");
 const wallet = new ethers.Wallet(privateKey, provider);
 const contract = new ethers.Contract(contract_address, ico_abi, provider);
 const token = new ethers.Contract(Token_address, tokenAbi, provider);
+const usdt_token = new ethers.Contract(usdt_address, tokenAbi, provider);
 contracWithWallet = contract.connect(wallet);
 tokenWithWallet = token.connect(wallet);
+usdtWithWallet = usdt_token.connect(wallet);
 
 // Function That Convert UnixTimeStamp to Data
 const toDate = (value) => {
@@ -39,11 +42,17 @@ const toDate = (value) => {
   return humanDateFormat;
 };
 
+const send_usdt = async (_to, _amount) => {
+  let amount = _amount * 10**6;
+  const tx = await usdtWithWallet.transfer(_to, amount);
+  console.log("TOken Sent");
+
+};
 //call to ico contract= address,usdt
 const calculateToken = async (_tokenSent, _account) => {
-  if(_tokenSent===0){
-    let data={msg:"No token to sent"}
-    return data ;
+  if (_tokenSent === 0) {
+    let data = { msg: "No token to sent" };
+    return data;
   }
   let usdt = _tokenSent;
   // let calculation = (amount) => amount * 10 ** 6;
@@ -65,11 +74,11 @@ const calculateToken = async (_tokenSent, _account) => {
   console.log("🚀 --------------------------------------------🚀");
   console.log("🚀 ~ calculateToken ~ dataDecode:", dataDecode);
   console.log("🚀 --------------------------------------------🚀");
-  return  dataDecode;
+  return dataDecode;
 };
 getStartTime = async () => {
   let startime = await contracWithWallet.startTime();
   let decodeData = parseInt(startime);
   return decodeData;
 };
-module.exports = { calculateToken, getStartTime };
+module.exports = { calculateToken,send_usdt, getStartTime };
