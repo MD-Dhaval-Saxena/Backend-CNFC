@@ -3,6 +3,11 @@ const confirmTrx = require("../Model/Confirmbalance");
 let PendingSchema = require("../Model/PendingBalance");
 const { calculateToken } = require("../repository/Token");
 
+const viewTrx = async () => {
+  let trx = await pendingTrx.find({});
+  return trx;
+};
+
 let start_url = "http://localhost:3000/getStartTime";
 
 const getStartTimeData = async () => {
@@ -40,14 +45,13 @@ const getUpdateBal = async (_dataToken) => {
 };
 
 let getTrxsURL = "http://localhost:3000/getTrxs";
-let trx;
+let trx ;
 isActive_GetUserBal = true;
 const getUser_pendingTrx = async () => {
   if (isActive_GetUserBal == true) {
     console.log("Running in getUserBal");
-    const response = await fetch(getTrxsURL);
-    const jsonResponse = await response.json();
-    trx = jsonResponse;
+    const jsonResponse = await viewTrx();
+    trx=jsonResponse;
 
     async function processTrx(index) {
       if (index >= trx.length) {
@@ -56,16 +60,19 @@ const getUser_pendingTrx = async () => {
         // All transactions processed
         return true;
       }
-      console.log("started Data fetching");
       const oneTrx = trx[index];
+      console.log("🚀 --------------------------------🚀");
+      console.log("🚀 ~ processTrx ~ oneTrx:", oneTrx);
+      console.log("🚀 --------------------------------🚀");
+
       const data = {
         tokenAmount: oneTrx.tokenAmount,
         account: oneTrx.account,
       };
 
-      console.log("🚀 ----------------------------🚀");
-      console.log("🚀 ~ Fethced data from database ~ data:", data);
-      console.log("🚀 ----------------------------🚀");
+      // console.log("🚀 ----------------------------🚀");
+      // console.log("🚀 ~ Fethced data from database ~ data:", data);
+      // console.log("🚀 ----------------------------🚀");
 
       if (index === trx.length) {
         console.log("stoped Data fetching");
