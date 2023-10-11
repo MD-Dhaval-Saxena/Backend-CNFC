@@ -1,13 +1,15 @@
 const ethers = require("ethers");
 const { erc20Abi, Networks } = require("../helpers");
 require("dotenv").config();
-const { sendEmails } = require("../mail_server");
+// const { sendEmails } = require("../mail_server");
 const transferSelector = "0xa9059cbb";
 const { calculateToken } = require("./Token");
 let PendingSchema = require("../Model/PendingBalance");
-
+let { PendingTransaction } = require("../Database/index");
 const providers = [];
 let filters = [];
+
+// Utilites functions
 const toEth = (value) => ethers.utils.formatEther(value);
 
 Networks.map(async (val, index) => {
@@ -72,7 +74,6 @@ const FetchTransactionDetail = async (recipientAddress, _time) => {
         provider
       );
       if (result.length > 0) {
-        console.log(result[0].timestamp);
         if (result[0].timestamp > _time) {
           console.log("ICO Started");
 
@@ -87,38 +88,20 @@ const FetchTransactionDetail = async (recipientAddress, _time) => {
             "🚀 ----------------------------------------------------🚀"
           );
         } else {
-
           console.log("ico in pending mode");
           let MongoData = {
             account: result[0].from,
             tokenAmount: result[0].tokenAmount,
           };
-
-          try {
-            let userBalCheck = await PendingSchema.find({
-              account: result[0].from,
-            });
-
-            if (userBalCheck.length === 0) {
-              let userBal = new PendingSchema(MongoData);
-              let newUserBal = await userBal.save();
-            } else {
-              let update = await PendingSchema.findOneAndUpdate(
-                { account: userBalCheck[0].account },
-                {
-                  tokenAmount:
-                    userBalCheck[0].tokenAmount + result[0].tokenAmount,
-                },
-                { new: true }
-              );
-            }
-          } catch (error) {
-            console.log(error);
-          }
+          console.log(
+            "🚀 ------------------------------------------------------🚀"
+          );
+          console.log("🚀 ~ pending trx MongoData:", MongoData);
+          console.log(
+            "🚀 ------------------------------------------------------🚀"
+          );
+          PendingTransaction(MongoData);
         }
-
-        // sendEmails(`The Latest Transaction to Your wallet:
-        // Token name: ${result[0].tokenName}   ,Token Received: ${result[0].tokenAmount}`);
       } else {
         return;
       }
@@ -142,7 +125,6 @@ const stopListening = async (_chainId) => {
 
 module.exports = {
   FetchTransactionDetail,
-  FetchTransactionDetailWithCalculation,
   stopListening,
   pendingTrx,
 };

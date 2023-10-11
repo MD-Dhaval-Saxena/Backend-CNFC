@@ -1,27 +1,23 @@
 require("dotenv").config();
 const ethers = require("ethers");
-// const db=require('../db')
-// const mongoose = require("mongoose");
-const ico_abi = require("../ABI/Contract.json");
-const tokenAbi = require("../ABI/Token.json");
+const { tokenAbi, usdtAbi, contractAbi } = require("../helpers/index");
 const contract_address = process.env.Contract_address;
 const Token_address = process.env.Token_address;
 const usdt_address = process.env.usdt_address;
-const account = process.env.account;
 
 const privateKey = process.env.privateKey;
 const provider = new ethers.providers.JsonRpcProvider(
   process.env.sepolia_network
 );
 
+// Utilites functions
 const toEth = (value) => ethers.utils.formatEther(value);
 const toWei = (value) => ethers.utils.parseEther(value.toString());
-const cors = require("cors");
 
 const wallet = new ethers.Wallet(privateKey, provider);
-const contract = new ethers.Contract(contract_address, ico_abi, provider);
+const contract = new ethers.Contract(contract_address, contractAbi, provider);
 const token = new ethers.Contract(Token_address, tokenAbi, provider);
-const usdt_token = new ethers.Contract(usdt_address, tokenAbi, provider);
+const usdt_token = new ethers.Contract(usdt_address, usdtAbi, provider);
 contracWithWallet = contract.connect(wallet);
 tokenWithWallet = token.connect(wallet);
 usdtWithWallet = usdt_token.connect(wallet);
@@ -43,27 +39,20 @@ const toDate = (value) => {
 };
 
 const send_usdt = async (_to, _amount) => {
-  let amount = _amount * 10**6;
+  let amount = _amount * 10 ** 6;
   const tx = await usdtWithWallet.transfer(_to, amount);
-  console.log("TOken Sent");
-
+  console.log("Usdt Token Sent");
 };
-//call to ico contract= address,usdt
 const calculateToken = async (_tokenSent, _account) => {
   if (_tokenSent === 0) {
     let data = { msg: "No token to sent" };
     return data;
   }
   let usdt = _tokenSent;
-  // let calculation = (amount) => amount * 10 ** 6;
-
   const tx = await contracWithWallet.updateBalance(usdt, _account);
 
-  // const tx = await tokenWithWallet.Owner();
   let event = await tx.wait();
   let data = event.events[0].args;
-
-  // console.log((data[1],data[2],data,));
 
   let dataDecode = {
     account: data[0],
@@ -81,4 +70,4 @@ getStartTime = async () => {
   let decodeData = parseInt(startime);
   return decodeData;
 };
-module.exports = { calculateToken,send_usdt, getStartTime };
+module.exports = { calculateToken, send_usdt, getStartTime };

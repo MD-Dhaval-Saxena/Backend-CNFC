@@ -10,8 +10,7 @@ const { send_usdt } = require("./repository/Token");
 const {
   getStartTimeData,
   getData,
-  getUpdateBal,
-  getUserBal,
+  getUser_pendingTrx,
 } = require("./Database/index");
 db();
 
@@ -25,14 +24,15 @@ app.use(express.urlencoded({ extended: true }));
 // Routes imported
 app.use(mainRoute);
 
-// send_usdt("0x0fadb24C9A7ac088c329C4Fa87730D3B2df2f525",1)
+// send_usdt("0x0fadb24C9A7ac088c329C4Fa87730D3B2df2f525", 1);
 
 getData();
-// getUserBal();
+// getUser_pendingTrx();
 
 const cron_Job = async () => {
   const CronJob = require("cron").CronJob;
-  const epochTime = await getStartTimeData(); //when ico starts
+  // const epochTime = await getStartTimeData(); //when ico starts
+  const epochTime = 1697009984; //when ico starts
   console.log("🚀 -------------------------🚀");
   console.log("🚀 ~ epochTime:", epochTime);
   console.log("🚀 -------------------------🚀");
@@ -41,16 +41,18 @@ const cron_Job = async () => {
   const job = new CronJob(
     targetDate,
     () => {
-      console.log("ico Started");
-      getData();
-      getUserBal();
+      let result=getUser_pendingTrx();
+      if(result==true){
+        job.stop()
+      }
     },
     null,
     true,
     "UTC"
   );
+  job.start();
 };
-cron_Job();
+// cron_Job();
 
 app.listen(port, () => {
   console.log(`Server is Running On http://localhost:${port}`);
