@@ -27,7 +27,7 @@ app.use(mainRoute);
 // send_usdt("0x0fadb24C9A7ac088c329C4Fa87730D3B2df2f525", 1);
 
 getData();
-getUser_pendingTrx();
+// getUser_pendingTrx();
 
 const cron_Job = async () => {
   const CronJob = require("cron").CronJob;
