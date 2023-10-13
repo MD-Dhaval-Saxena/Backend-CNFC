@@ -3,14 +3,13 @@ const mongoose = require("mongoose");
 
 const connectToMongo = async () => {
   try {
-      mongoose.connect(process.env.mongo_atlas_url);
-      console.log("Connected to Mongo");
+    mongoose.connect(process.env.mongo_url);
+    console.log("Connected to Mongo");
   } catch (error) {
-      console.log(error);
+    console.log(error);
   }
-  
 };
-connectToMongo();
+module.exports = { connectToMongo };
 
 // await mongoose
 //     // .connect(process.env.mongo_atlas_url, {
@@ -31,4 +30,3 @@ connectToMongo();
 //     .catch((err) => console.log(err));
 // }
 
-module.exports = connectToMongo;

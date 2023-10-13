@@ -1,27 +1,21 @@
+require("dotenv").config();
 const pendingTrx = require("../Model/PendingBalance");
 const confirmTrx = require("../Model/Confirmbalance");
 let PendingSchema = require("../Model/PendingBalance");
 const { calculateToken } = require("../repository/Token");
-
+const { getStartTime } = require("../repository/Token");
+const port = process.env.port;
 const viewTrx = async () => {
   let trx = await pendingTrx.find({});
   return trx;
 };
 
-let start_url = "http://localhost:3000/getStartTime";
-
-const getStartTimeData = async () => {
-  const response = await fetch(start_url);
-  const jsonResponse = await response.json();
-  return jsonResponse.startTime;
-};
-let url =
-  "http://localhost:3000/getToken/0x0fadb24C9A7ac088c329C4Fa87730D3B2df2f525";
+let getToken = process.env.getToken;
 
 const getData = async () => {
-  let startTime = await getStartTimeData();
+  let startTime = await getStartTime();
 
-  const response = await fetch(url, {
+  const response = await fetch(getToken, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -34,8 +28,6 @@ const getData = async () => {
   console.log("🚀 -----------------------------------------🚀");
 };
 
-// let updatBal_url = "http://localhost:3000/updateBalance";
-
 const getUpdateBal = async (_dataToken) => {
   let { account, tokenAmount } = _dataToken;
   let data = await calculateToken(tokenAmount, account);
@@ -44,14 +36,13 @@ const getUpdateBal = async (_dataToken) => {
   console.log("🚀 ------------------------------🚀");
 };
 
-let getTrxsURL = "http://localhost:3000/getTrxs";
-let trx ;
+let trx;
 isActive_GetUserBal = true;
 const getUser_pendingTrx = async () => {
   if (isActive_GetUserBal == true) {
     console.log("Running in getUserBal");
     const jsonResponse = await viewTrx();
-    trx=jsonResponse;
+    trx = jsonResponse;
 
     async function processTrx(index) {
       if (index >= trx.length) {
@@ -69,10 +60,6 @@ const getUser_pendingTrx = async () => {
         tokenAmount: oneTrx.tokenAmount,
         account: oneTrx.account,
       };
-
-      // console.log("🚀 ----------------------------🚀");
-      // console.log("🚀 ~ Fethced data from database ~ data:", data);
-      // console.log("🚀 ----------------------------🚀");
 
       if (index === trx.length) {
         console.log("stoped Data fetching");
@@ -146,7 +133,6 @@ const PendingTransaction = async (_mongoData) => {
 };
 
 module.exports = {
-  getStartTimeData,
   getData,
   getUpdateBal,
   getUser_pendingTrx,

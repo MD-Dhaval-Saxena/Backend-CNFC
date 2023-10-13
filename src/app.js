@@ -2,17 +2,14 @@ require("dotenv").config();
 const express = require("express");
 const mainRoute = require("./routes");
 const cors = require("cors");
-const cron = require("node-cron");
-const db = require("./db");
-const pendingTrx = require("./Model/PendingBalance");
-const confirmTrx = require("./Model/Confirmbalance");
+const { connectToMongo } = require("./db");
 const { send_usdt } = require("./repository/Token");
 const {
-  getStartTimeData,
   getData,
   getUser_pendingTrx,
 } = require("./Database/index");
-db();
+
+connectToMongo();
 
 const app = express();
 const port = process.env.port || 2000;
@@ -27,7 +24,7 @@ app.use(mainRoute);
 // send_usdt("0x0fadb24C9A7ac088c329C4Fa87730D3B2df2f525", 1);
 
 getData();
-// getUser_pendingTrx();
+getUser_pendingTrx();
 
 const cron_Job = async () => {
   const CronJob = require("cron").CronJob;
@@ -41,7 +38,7 @@ const cron_Job = async () => {
   const job = new CronJob(
     targetDate,
     () => {
-      let result=getUser_pendingTrx();
+      let result= getUser_pendingTrx();
       if(result==true){
         job.stop()
       }

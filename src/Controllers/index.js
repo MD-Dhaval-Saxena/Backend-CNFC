@@ -2,9 +2,7 @@ require("dotenv").config();
 const {
   FetchTransactionDetail,
   stopListening,
-  pendingTrx,
 } = require("../repository/index");
-const { getStartTime, calculateToken } = require("../repository/Token.js");
 
 exports.getTransaction = async (req, res) => {
   let account = req.params.account;
@@ -15,11 +13,6 @@ exports.getTransaction = async (req, res) => {
   } else {
     res.send({ status: "Invalid Address" });
   }
-};
-
-exports.getStartTime = async (req, res) => {
-  let startTime = await getStartTime();
-  res.send({ startTime });
 };
 
 exports.stopListening = async (req, res) => {
