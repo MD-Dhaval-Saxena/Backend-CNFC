@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const mainController = require("../controllers");
+const mainController = require("../controller");
 
 router.post("/getToken/:account", mainController.getTransaction);
 router.get("/cancell/listener/:chainid", mainController.stopListening);
