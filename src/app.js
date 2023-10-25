@@ -1,6 +1,6 @@
 require("dotenv").config();
 const express = require("express");
-const mainRoute = require("./routes");
+const mainRoute = require("../src/Routes");
 const cors = require("cors");
 const { connectToMongo } = require("./db");
 const { send_usdt } = require("./repository/Token");
