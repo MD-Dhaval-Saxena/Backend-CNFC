@@ -11,6 +11,7 @@ const connectToMongo = async () => {
 };
 module.exports = { connectToMongo };
 
+// 
 // await mongoose
 //     // .connect(process.env.mongo_atlas_url, {
 //     //   useNewUrlParser: true,
