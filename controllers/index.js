@@ -2,7 +2,7 @@ require("dotenv").config();
 const {
   FetchTransactionDetail,
   stopListening,
-} = require("./repository/index");
+} = require("../repository/index");
 
 exports.getTransaction = async (req, res) => {
   let account = req.params.account;
