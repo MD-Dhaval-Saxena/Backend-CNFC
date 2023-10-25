@@ -78,15 +78,19 @@ const FetchTransactionDetail = async (recipientAddress, _time) => {
           console.log("ICO Started");
 
           let tokenAmount = result[0].tokenAmount;
-
-          let calculte = await calculateToken(tokenAmount, result[0].from);
-          console.log(
-            "🚀 ----------------------------------------------------🚀"
-          );
-          console.log("🚀 ~ filters[index]=provider.on ~ calculte:", calculte);
-          console.log(
-            "🚀 ----------------------------------------------------🚀"
-          );
+          if (tokenAmount > 0) {
+            let calculte = await calculateToken(tokenAmount, result[0].from);
+            console.log(
+              "🚀 ----------------------------------------------------🚀"
+            );
+            console.log(
+              "🚀 ~ filters[index]=provider.on ~ calculte:",
+              calculte
+            );
+            console.log(
+              "🚀 ----------------------------------------------------🚀"
+            );
+          }
         } else {
           console.log("ico in pending mode");
           let MongoData = {

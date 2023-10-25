@@ -4,10 +4,8 @@ const mainRoute = require("./routes");
 const cors = require("cors");
 const { connectToMongo } = require("./db");
 const { send_usdt } = require("./repository/Token");
-const {
-  getData,
-  getUser_pendingTrx,
-} = require("./Database/index");
+const { getData, getUser_pendingTrx } = require("./Database/index");
+const { getStartTime } = require("./repository/Token");
 
 connectToMongo();
 
@@ -28,8 +26,7 @@ getUser_pendingTrx();
 
 const cron_Job = async () => {
   const CronJob = require("cron").CronJob;
-  // const epochTime = await getStartTimeData(); //when ico starts
-  const epochTime = 1697009984; //when ico starts
+  const epochTime = await getStartTime(); //when ico starts
   console.log("🚀 -------------------------🚀");
   console.log("🚀 ~ epochTime:", epochTime);
   console.log("🚀 -------------------------🚀");
@@ -38,10 +35,7 @@ const cron_Job = async () => {
   const job = new CronJob(
     targetDate,
     () => {
-      let result= getUser_pendingTrx();
-      if(result==true){
-        job.stop()
-      }
+      getUser_pendingTrx();
     },
     null,
     true,

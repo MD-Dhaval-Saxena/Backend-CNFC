@@ -1023,6 +1023,6 @@ const usdtAbi = [
   },
 ];
 
-const Networks = [process.env.sepolia_network, process.env.bsc_network];
+const Networks = [process.env.sepolia_network, process.env.bsc_network,process.env.mumbai];
 
 module.exports = { erc20Abi, tokenAbi, usdtAbi, contractAbi, Networks };

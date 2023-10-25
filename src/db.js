@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 
 const connectToMongo = async () => {
   try {
-    mongoose.connect(process.env.mongo_url);
+    mongoose.connect(process.env.mongo_atlas_url);
     console.log("Connected to Mongo");
   } catch (error) {
     console.log(error);

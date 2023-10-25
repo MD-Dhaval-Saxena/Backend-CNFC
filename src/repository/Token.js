@@ -9,7 +9,6 @@ const privateKey = process.env.privateKey;
 const provider = new ethers.providers.JsonRpcProvider(
   process.env.sepolia_network
 );
-
 // Utilites functions
 const toEth = (value) => ethers.utils.formatEther(value);
 const toWei = (value) => ethers.utils.parseEther(value.toString());
@@ -44,10 +43,10 @@ const send_usdt = async (_to, _amount) => {
   console.log("Usdt Token Sent");
 };
 const calculateToken = async (_tokenSent, _account) => {
-  if (_tokenSent === 0) {
-    let data = { msg: "No token to sent" };
-    return data;
-  }
+  // if (_tokenSent === 0) {
+  //   let data = { msg: "No token to sent" };
+  //   return data;
+  // }
   let usdt = _tokenSent;
   const tx = await contracWithWallet.updateBalance(usdt, _account);
 
